@@ -1,0 +1,71 @@
+import ipaddress
+import subprocess
+import platform
+
+# LAN Configuration
+computers = {
+    "PC1": "192.168.1.10",
+    "PC2": "192.168.1.11",
+    "PC3": "192.168.1.12"
+}
+
+subnet_mask = "255.255.255.0"
+gateway = "192.168.1.1"
+network = ipaddress.ip_network("192.168.1.0/24")
+
+# Display IP Configuration
+print("=" * 55)
+print("       LOCAL AREA NETWORK (LAN) SIMULATION")
+print("=" * 55)
+
+for pc, ip in computers.items():
+    address = ipaddress.ip_address(ip)
+
+    if address not in network or address in (network.network_address, network.broadcast_address):
+        print(f"Invalid IP address for {pc}: {ip}")
+        continue
+
+    print(f"\nComputer: {pc}")
+    print(f"IP Address: {ip}")
+    print(f"Subnet Mask: {subnet_mask}")
+    print(f"Default Gateway: {gateway}")
+
+# Test Connectivity
+print("\n" + "=" * 55)
+print("             LAN CONNECTIVITY TEST")
+print("=" * 55)
+
+for source, source_ip in computers.items():
+    for destination, destination_ip in computers.items():
+        if source == destination:
+            continue
+
+        print(f"\n{source} -> {destination} ({destination_ip})")
+
+        try:
+            command = (
+                ["ping", "-n", "1", "-w", "2000", destination_ip]
+                if platform.system() == "Windows"
+                else ["ping", "-c", "1", "-W", "2", destination_ip]
+            )
+
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=4
+            )
+
+            if result.returncode == 0:
+                print("Status: Reachable")
+                print("Result: Ping successful")
+            else:
+                print("Status: Unreachable")
+                print("Result: Check network configuration and connections")
+
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            print("Status: Ping test failed or timed out")
+
+print("\n" + "=" * 55)
+print("              SIMULATION COMPLETED")
+print("=" * 55)
